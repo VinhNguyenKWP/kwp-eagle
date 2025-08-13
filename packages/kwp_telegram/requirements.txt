@@ -4,4 +4,4 @@ loguru>=0.7.0
 python-dotenv>=1.0.0
 cachetools>=5.0.0
 
-# Link kwp_core từ kwp_monorepo (sửa path nếu khác)
+# Link kwp_core từ kwp_monorepo (sửa path nếu khác)pip install -e "D:\Projects\kwp-monorepo\kwp_core"
