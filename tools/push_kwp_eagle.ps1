@@ -189,10 +189,11 @@ if (-not $NoPush) {
     $hasUpstream = $false
   }
 
-  if ($hasUpstream) {
-    Run-Push ("push {0} {1}" -f $Remote, $Branch)
+  if ($hasUpstream) {    
+    Run-Git @("push", $Remote, $Branch)
   } else {
-    Run-Push ("push -u {0} {1}" -f $Remote, $Branch)
+    #Run-Push ("push -u {0} {1}" -f $Remote, $Branch)
+    Run-Git @("push", "-u", $Remote, $Branch)
   }
   Write-Host "Done."
 } else {
