@@ -8,7 +8,8 @@ git pull origin main --rebase
 git reset --hard
 git pull origin main --rebase
 
-# ./script/deploy/gitpush.sh 
+.\tools\push_kwp_eagle.ps1
+
 
 echo "🚀 Restarting service (nếu cần)..."
 
