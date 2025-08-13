@@ -18,16 +18,19 @@ function Exec($cmd, [switch]$Quiet) {
   return $out
 }
 
-function Run-Push([string]$args) {
-  $out = & git $args 2>&1
+# Run git with an array of args, print all output, only fail when exit code != 0
+function Run-Git([string[]]$args) {
+  $out = & git @args 2>&1
   $code = $LASTEXITCODE
   $out | ForEach-Object { Write-Host $_ }
-  if ($code -ne 0) { throw "git $args failed with exit code $code" }
+  if ($code -ne 0) {
+    throw ("git {0} failed with exit code {1}" -f ($args -join ' '), $code)
+  }
 }
 
 # 0) Ensure git is available
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-  throw "Git is not installed or not found in PATH. Install Git for Windows and restart VS Code."
+  throw "Git is not installed or not found in PATH. Install Git for Windows and restart your shell."
 }
 Exec "git --version" -Quiet | Out-Null
 
@@ -51,13 +54,12 @@ if ($inside -ne "true") {
   }
 }
 
-# 2) Ensure .gitattributes (normalize line endings)
+# 2) Ensure .gitattributes (normalize line endings to LF)
 $gitattributes = ".gitattributes"
 $createdGitAttr = $false
 if (-not (Test-Path $gitattributes)) {
   "* text=auto eol=lf`n" | Out-File -FilePath $gitattributes -Encoding utf8
   $createdGitAttr = $true
-  # Renormalize only when creating for the first time
   Write-Host "Renormalizing line endings (LF) ..."
   & git add --renormalize . 2>$null | Out-Null
 }
@@ -134,7 +136,6 @@ Untrack-IfTracked "build"           -Recursive
 Untrack-IfTracked "dist"            -Recursive
 Untrack-IfTracked ".vscode"         -Recursive
 Untrack-IfTracked ".idea"           -Recursive
-
 Untrack-IfTracked ".env"
 # Add specific .env.* variants if needed:
 # Untrack-IfTracked ".env.local"
@@ -151,9 +152,7 @@ $staged = (Exec "git diff --cached --name-only" -Quiet | Out-String).Trim()
 
 if (-not $NoCommit) {
   if (-not [string]::IsNullOrWhiteSpace($staged)) {
-    if ($createdGitAttr) {
-      Write-Host "Commit will include .gitattributes and renormalized files."
-    }
+    if ($createdGitAttr) { Write-Host "Commit will include .gitattributes and renormalized files." }
     Write-Host ("Commit with message: " + $CommitMsg)
     Exec ("git commit -m ""{0}""" -f $CommitMsg) | Out-Null
   } else {
@@ -189,10 +188,9 @@ if (-not $NoPush) {
     $hasUpstream = $false
   }
 
-  if ($hasUpstream) {    
+  if ($hasUpstream) {
     Run-Git @("push", $Remote, $Branch)
   } else {
-    #Run-Push ("push -u {0} {1}" -f $Remote, $Branch)
     Run-Git @("push", "-u", $Remote, $Branch)
   }
   Write-Host "Done."
@@ -203,4 +201,4 @@ if (-not $NoPush) {
 # 7) Short status
 Write-Host ""
 Write-Host "Short status:"
-Exec "git status -sb"
+Exec "git status -sb" | Out-Null
