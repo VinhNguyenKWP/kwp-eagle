@@ -1,0 +1,7 @@
+python-telegram-bot>=20.7,<22
+pydantic>=2.5.0
+loguru>=0.7.0
+python-dotenv>=1.0.0
+cachetools>=5.0.0
+
+# Link kwp_core từ kwp_monorepo (sửa path nếu khác)
