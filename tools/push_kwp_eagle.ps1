@@ -18,13 +18,13 @@ function Exec($cmd, [switch]$Quiet) {
   return $out
 }
 
-# Run git with an array of args, print all output, only fail when exit code != 0
-function Run-Git([string[]]$args) {
-  $out = & git @args 2>&1
+# IMPORTANT: do NOT use parameter name "$args" (reserved by PowerShell)
+function Run-Git([string[]]$gitArgs) {
+  $out = & git @gitArgs 2>&1
   $code = $LASTEXITCODE
   $out | ForEach-Object { Write-Host $_ }
   if ($code -ne 0) {
-    throw ("git {0} failed with exit code {1}" -f ($args -join ' '), $code)
+    throw ("git {0} failed with exit code {1}" -f ($gitArgs -join ' '), $code)
   }
 }
 
@@ -201,4 +201,4 @@ if (-not $NoPush) {
 # 7) Short status
 Write-Host ""
 Write-Host "Short status:"
-Exec "git status -sb" | Out-Null
+Exec "git status -sb"
